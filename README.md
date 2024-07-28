@@ -14,4 +14,4 @@ anacondaを導入しているならカレントディレクトリを移動した
 - いろいろいっぱい
 
 ## toioの紙の座標系
-![座標](https://github.com/kutaiii/images/blob/main/PXL_20240728_190240290.jpg　"座標")
+![座標](https://github.com/kutaiii/images/blob/main/PXL_20240728_190240290.jpg)
