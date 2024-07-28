@@ -6,8 +6,12 @@ anacondaを導入しているならカレントディレクトリを移動した
 `conda env create -f environment.yml`
 
 ## やること　
-- 無線によるatomとの通信 WiFiを介した接続は可能！！位置も取れる！　うれしいね
+- ~~無線によるatomとの通信~~
+- WiFiを介した接続は可能！！位置も取れる！　うれしいね
 - slamをする上での経路計画
 - ゴール位置、押す対象物の決定方法
 - slamのための荒いピクセルによる環境地図作成
 - いろいろいっぱい
+
+## toioの紙の座標系
+![座標](https://github.com/kutaiii/images/blob/main/PXL_20240728_190240290.jpg　"座標")
