@@ -7,9 +7,9 @@ import signal
 import matplotlib.pyplot as plt
 
 LOOP = True
-ATOM_MAC = "64:b7:08:80:e1:3c" #bluetooth接続に使用　環境にあわせて変更  change to your environment
-ATOM_IP = "192.168.0.104" #WiFi接続に使用　環境にあわせて変更  change to your environment
-PORT ='COM3' #Serial接続に使用　環境にあわせて変更  change to your environment
+ATOM_MAC = "64:b7:08:80:e1:3c" #bluetooth接続に使用　環境にあわせて変更  change to suit your environment
+ATOM_IP = "192.168.0.104" #WiFi接続に使用　環境にあわせて変更  change to suit your environment
+PORT ='COM3' #Serial接続に使用　環境にあわせて変更  change to suit your environment
 MAX_X = 78
 MIN_X = -205
 MAX_Y = 205
