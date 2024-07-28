@@ -59,4 +59,4 @@ dependencies:
       - traitlets==5.14.3
       - typing-extensions==4.12.2
       - wcwidth==0.2.13
-prefix: C:\Users\kutai_ito\anaconda3\envs\toio
+
