@@ -84,6 +84,10 @@ class AtomWiFiConnection(AtomConnection):
 
     def distance(self):
         distance = self.client.recv(self.buffer_size).decode('utf-8').strip()
-        distance = float(distance)
-        return distance/SCALE
+        try:
+            distance = float(distance)
+            return distance/SCALE
+        except:
+            return None
+
     
