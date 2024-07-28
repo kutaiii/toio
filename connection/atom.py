@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 import socket
 
 SCALE = 54/45 #atomによる距離とtoioマップの距離の比率
+TOIO_SIZE = 318 #toioの一辺の長さ
 
 class AtomConnection:
     '''
@@ -43,6 +44,7 @@ class AtomSerialConnection(AtomConnection):
     def distance(self):
         distance = self.ser.readline().decode('utf-8').strip()
         distance = float(distance)
+        distance = distance - TOIO_SIZE/2
         return distance/SCALE
 
 
@@ -67,7 +69,6 @@ class AtomBleConnection(AtomConnection):
 class AtomWiFiConnection(AtomConnection):
     '''
     WiFi接続クラス
-    現環境でWiFiの接続ができないため、未実装
     '''
     def __init__(self, ip):
         self.ip = ip
@@ -86,6 +87,7 @@ class AtomWiFiConnection(AtomConnection):
         distance = self.client.recv(self.buffer_size).decode('utf-8').strip()
         try:
             distance = float(distance)
+            distance = distance-TOIO_SIZE/2
             return distance/SCALE
         except:
             return None

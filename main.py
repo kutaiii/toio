@@ -23,9 +23,9 @@ def ctrl_c_handler(_signum, _frame):
 signal.signal(signal.SIGINT, ctrl_c_handler)
 
 
-def test(config=config):
+def main(config):
     cube = SimpleCube()
-    atom = AtomSerialConnection(PORT)
+    atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
     slam = SLAM(atom, cube, config)
     fig,ax = plt.subplots()
     fig2,ax2 = plt.subplots()
@@ -46,4 +46,4 @@ def test(config=config):
 
 
 if __name__ == "__main__":
-    sys.exit(test())
+    sys.exit(main(config))
