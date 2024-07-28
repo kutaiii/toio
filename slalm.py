@@ -2,6 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 from connection.atom import AtomConnection
 from toio.simple import SimpleCube
+import matplotlib.pyplot as plt
 
 @dataclass
 class MappingConfig():
@@ -52,6 +53,8 @@ class Mapping():
     def bresenham(self, x0, y0, x1, y1):
         '''
         ブレゼンハムアルゴリズム
+        2点間の直線を引く
+        探索済みのマスを返す
         '''
         points = []
         dx = abs(x1 - x0)
@@ -73,6 +76,40 @@ class Mapping():
                 y0 += sy
 
         return np.array(points)
+
+    def color_map_based_on_counts(self,cell_size=10):
+        """
+        マップをマス目に分けて、各マスの中の0,1,2の個数に応じてマスの色を決定する。
+        
+        Parameters:
+        - cell_size: マス目のサイズ
+        
+        Returns:
+        - colored_map: 色分けされたマップ
+        """
+        map_data = self.get_map()
+        rows, cols = map_data.shape
+        colored_map = np.zeros((rows // cell_size, cols // cell_size))
+
+        for i in range(0, rows-rows%cell_size, cell_size):
+            for j in range(0, cols, cell_size):
+                cell = map_data[i:i + cell_size, j:j + cell_size]
+                unique, counts = np.unique(cell, return_counts=True)
+                count_dict = dict(zip(unique, counts))
+                count_0 = count_dict.get(0, 0)
+                count_1 = count_dict.get(1, 0)
+                count_2 = count_dict.get(2, 0)
+                
+                if count_0 >2:
+                    color = 0
+                elif count_1 > 5:
+                    color = 1
+                else:
+                    color = 2
+                
+                colored_map[i // cell_size-1, j // cell_size-1] = color
+
+        return colored_map
 
     def update_map(self,x,y,angle,distance):
         '''
@@ -121,6 +158,9 @@ class SLAM():
         self.mesurement = Mesurement(atom, cube)
     
     def update(self):
+        '''
+        マップを更新する
+        '''
         distance = self.mesurement.get_distance()
         pos, orientation = self.mesurement.get_cube_location()
         if (distance is not None) and (pos is not None) and (orientation is not None):
@@ -129,6 +169,16 @@ class SLAM():
     
     def get_map(self):
         return self.mapping.get_map()
+    
+    def get_colored_map(self):
+        return self.mapping.color_map_based_on_counts()
+    
+    def move(self):
+        pass
+    
+    def main(self):
+        self.move()
+        self.update()
     
     
         

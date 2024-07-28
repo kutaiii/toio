@@ -1,6 +1,8 @@
 import asyncio
 import serial
+from bleak import BleakClient
 from abc import ABC, abstractmethod
+import socket
 
 SCALE = 54/45 #atomによる距離とtoioマップの距離の比率
 
@@ -61,5 +63,27 @@ class AtomBleConnection(AtomConnection):
 
     def distance(self):
         pass
-    
+
+class AtomWiFiConnection(AtomConnection):
+    '''
+    WiFi接続クラス
+    現環境でWiFiの接続ができないため、未実装
+    '''
+    def __init__(self, ip):
+        self.ip = ip
+        self.port =5000
+        self.buffer_size = 1024
+        self.connect()
+        
+    def connect(self):
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.client.connect((self.ip, self.port))
+
+    def disconnect(self):
+        self.client.close()
+
+    def distance(self):
+        distance = self.client.recv(self.buffer_size).decode('utf-8').strip()
+        distance = float(distance)
+        return distance/SCALE
     

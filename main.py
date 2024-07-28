@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 LOOP = True
 ATOM_MAC = "64:b7:08:80:e1:3c"
-PORT ='COM3'
+ATOM_IP = "192.168.0.104"
+PORT ='COM3' #環境にあわせて変更  change to your environment
 MAX_X = 78
 MIN_X = -205
 MAX_Y = 205
@@ -27,16 +28,18 @@ def test(config=config):
     atom = AtomSerialConnection(PORT)
     slam = SLAM(atom, cube, config)
     fig,ax = plt.subplots()
-    im = ax.imshow(slam.get_map(), cmap='gray', vmin=0, vmax=2)
+    fig2,ax2 = plt.subplots()
+    im = ax.imshow(slam.get_map(), cmap='jet', vmin=0, vmax=2)
+    im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
     while LOOP:
-        # print(slam.mesurement.get_distance())
-        # print(slam.mesurement.get_cube_location())
         slam.update()
-        print(slam.get_map())
         im.set_data(slam.get_map())
+        im2.set_data(slam.get_colored_map())
         plt.pause(0.01)
         time.sleep(0.01)
-
+    plt.close()
+    atom.disconnect()
+    return 0
 
 
 
