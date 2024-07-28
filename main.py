@@ -1,19 +1,41 @@
-import asyncio
+from toio.simple import SimpleCube
+import sys
+from connection.atom import AtomConnection, AtomSerialConnection
+from slalm import *
+import time
+import signal
 
-from toio import *
+LOOP = True
+ATOM_MAC = "64:b7:08:80:e1:3c"
+PORT ='COM3'
+MAX_X = 78
+MIN_X = -205
+MAX_Y = 205
+MIN_Y = -13
+config = MappingConfig(MAX_X, MIN_X, MAX_Y, MIN_Y)
 
-async def rotate(cube:ToioCoreCube):
-    await cube.api.motor.motor_control(10,-10)
-    
+def ctrl_c_handler(_signum, _frame):
+    global LOOP
+    print("Ctrl-C")
+    LOOP = False
+signal.signal(signal.SIGINT, ctrl_c_handler)
 
 
-async def main():
-    async with ToioCoreCube() as cube:
-        await rotate(cube)
-        await cube.api.motor.motor_control(0,0)
+def test(config=config):
+    cube = SimpleCube()
+    atom = AtomSerialConnection(PORT)
+    slam = SLAM(atom, cube, config)
+    while LOOP:
+        print(slam.mesurement.get_distance())
+        print(slam.mesurement.get_cube_location())
+        slam.update()
+        print(slam.get_map())
+        time.sleep(0.1)
 
-    return 0
+
+
+
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    sys.exit(test())
