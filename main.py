@@ -6,6 +6,8 @@ import time
 import signal
 import matplotlib.pyplot as plt
 
+#非同期処理
+
 LOOP = True
 ATOM_MAC = "64:b7:08:80:e1:3c" #bluetooth接続に使用　環境にあわせて変更  change to suit your environment
 ATOM_IP = "192.168.0.104" #WiFi接続に使用　環境にあわせて変更  change to suit your environment
