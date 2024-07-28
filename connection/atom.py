@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import socket
 
 SCALE = 54/45 #atomによる距離とtoioマップの距離の比率
-TOIO_SIZE = 318 #toioの一辺の長さ
+TOIO_SIZE = 31.8 #toioの一辺の長さ
 
 class AtomConnection:
     '''
@@ -43,9 +43,12 @@ class AtomSerialConnection(AtomConnection):
 
     def distance(self):
         distance = self.ser.readline().decode('utf-8').strip()
-        distance = float(distance)
-        distance = distance - TOIO_SIZE/2
-        return distance/SCALE
+        try:
+            distance = float(distance)
+            distance = distance - TOIO_SIZE/2
+            return distance/SCALE
+        except:
+            return None
 
 
 class AtomBleConnection(AtomConnection):
