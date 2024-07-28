@@ -43,11 +43,37 @@ class Mapping():
         y = int(y)
         x = x - self.config.min_x
         y = y - self.config.min_y
-        orientation = orientation+90
+        orientation = -orientation
+        orientation = orientation-90
         orientation = np.deg2rad(orientation)
 
         return x, y, orientation
     
+    def bresenham(self, x0, y0, x1, y1):
+        '''
+        ブレゼンハムアルゴリズム
+        '''
+        points = []
+        dx = abs(x1 - x0)
+        dy = abs(y1 - y0)
+        sx = np.sign(x1 - x0)
+        sy = np.sign(y1 - y0)
+        err = dx - dy
+
+        while True:
+            points.append((x0, y0))
+            if x0 == x1 and y0 == y1:
+                break
+            e2 = err * 2
+            if e2 > -dy:
+                err -= dy
+                x0 += sx
+            if e2 < dx:
+                err += dx
+                y0 += sy
+
+        return np.array(points)
+
     def update_map(self,x,y,angle,distance):
         '''
         マップを更新する
@@ -57,9 +83,10 @@ class Mapping():
         obstacle_y = y + distance * np.sin(angle)
         obstacle_x = int(obstacle_x)
         obstacle_y = int(obstacle_y)
-        if self.map.shape[0] > obstacle_x >= 0 and self.map.shape[1] > obstacle_y >= 0:
-            self.map[obstacle_x, obstacle_y] = 2
-            
+        free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
+        if self.map.shape[0] > obstacle_x >= 0 and self.map.shape[1] > obstacle_y >= 0 and self.map.shape[0] > x >= 0 and self.map.shape[1] > y >= 0:
+            self.map[free_points[:, 0], free_points[:, 1]] = 1
+            self.map[obstacle_x, obstacle_y] = 2           
 
     def get_map(self):
         return self.map
@@ -96,7 +123,7 @@ class SLAM():
     def update(self):
         distance = self.mesurement.get_distance()
         pos, orientation = self.mesurement.get_cube_location()
-        if distance is not None and pos is not None and orientation is not None:
+        if (distance is not None) and (pos is not None) and (orientation is not None):
             self.mapping.update_map(pos[0], pos[1], orientation, distance)
         return self.mapping.get_map()
     

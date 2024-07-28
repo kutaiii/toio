@@ -4,6 +4,7 @@ from connection.atom import AtomConnection, AtomSerialConnection
 from slalm import *
 import time
 import signal
+import matplotlib.pyplot as plt
 
 LOOP = True
 ATOM_MAC = "64:b7:08:80:e1:3c"
@@ -25,12 +26,16 @@ def test(config=config):
     cube = SimpleCube()
     atom = AtomSerialConnection(PORT)
     slam = SLAM(atom, cube, config)
+    fig,ax = plt.subplots()
+    im = ax.imshow(slam.get_map(), cmap='gray', vmin=0, vmax=2)
     while LOOP:
-        print(slam.mesurement.get_distance())
-        print(slam.mesurement.get_cube_location())
+        # print(slam.mesurement.get_distance())
+        # print(slam.mesurement.get_cube_location())
         slam.update()
         print(slam.get_map())
-        time.sleep(0.1)
+        im.set_data(slam.get_map())
+        plt.pause(0.01)
+        time.sleep(0.01)
 
 
 
