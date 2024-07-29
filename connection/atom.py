@@ -1,4 +1,3 @@
-import asyncio
 import serial
 from bleak import BleakClient
 from abc import ABC, abstractmethod
@@ -20,7 +19,7 @@ class AtomConnection:
         pass
 
     @abstractmethod
-    def distance(self):
+    async def distance(self):
         '''
         Atomとの距離を取得する
         get distance from Atom
@@ -40,7 +39,7 @@ class AtomSimulatorConnection(AtomConnection):
     def disconnect(self):
         pass
 
-    def distance(self):
+    async def distance(self):
         return 0
 
 class AtomSerialConnection(AtomConnection):
@@ -58,7 +57,7 @@ class AtomSerialConnection(AtomConnection):
     def disconnect(self):
         self.ser.close()
 
-    def distance(self):
+    async def distance(self):
         distance = self.ser.readline().decode('utf-8').strip()
         try:
             distance = float(distance)

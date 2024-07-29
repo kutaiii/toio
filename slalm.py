@@ -2,6 +2,7 @@ import numpy as np
 from dataclasses import dataclass
 from connection.atom import AtomConnection
 from toio.simple import SimpleCube
+from toio.cube import ToioCoreCube
 import matplotlib.pyplot as plt
 
 @dataclass
@@ -133,26 +134,29 @@ class Mapping():
         return self.map[x, y]
 
 class Measuring():
-    def __init__(self, atom: AtomConnection, cube: SimpleCube):
+    def __init__(self, atom: AtomConnection, cube: ToioCoreCube):
         self.atom = atom
         self.cube = cube
 
-    def get_distance(self):
+    async def get_distance(self):
         '''
         Atomとの距離を取得する
         '''
-        return self.atom.distance()
+        return await self.atom.distance()
     
-    def get_cube_location(self):
+    async def get_cube_location(self):
         '''
         Cubeの位置情報を取得する
         '''
-        pos = self.cube.get_current_position()
-        orientation = self.cube.get_orientation()
-        return pos, orientation
+        data = await self.cube.api.id_information.read()
+        if  hasattr(data, 'center') and hasattr(data.center, 'point') and hasattr(data.center, 'angle'):
+            pos = (data.center.point.x, data.center.point.y)
+            angle = data.center.angle
+            return pos, angle
+        return None, None
 
 class Moving():
-    def __init__(self, cube: SimpleCube, config: MapSetting):
+    def __init__(self, cube: ToioCoreCube, config: MapSetting):
         self.cube = cube
         self.config = config
 
@@ -199,19 +203,19 @@ class Moving():
         
 
 class SLAM():
-    def __init__(self, atom: AtomConnection, cube: SimpleCube, config: MapSetting):
+    def __init__(self, atom: AtomConnection, cube: ToioCoreCube, config: MapSetting):
         self.atom = atom
         self.cube = cube
         self.mapping = Mapping(config)
         self.mesurement = Measuring(atom, cube)
         self.moving = Moving(cube, config)
     
-    def update(self):
+    async def update(self):
         '''
         マップを更新する
         '''
-        distance = self.mesurement.get_distance()
-        pos, orientation = self.mesurement.get_cube_location()
+        distance = await self.mesurement.get_distance()
+        pos, orientation = await self.mesurement.get_cube_location()
         if (distance is not None) and (pos is not None) and (orientation is not None):
             self.mapping.update_map(pos[0], pos[1], orientation, distance)
         return self.mapping.get_map()

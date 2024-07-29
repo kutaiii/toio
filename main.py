@@ -1,4 +1,5 @@
 from toio.simple import SimpleCube
+from toio.cube import ToioCoreCube
 import sys
 from connection.atom import *
 from connection.cube import *
@@ -7,21 +8,21 @@ import time
 import signal
 import matplotlib.pyplot as plt
 import threading
+import asyncio
 import nest_asyncio
 nest_asyncio.apply()
-
-#非同期処理
 
 #TODO　toioの移動とmappingを同時に行うため、全体を非同期処理に変更する　Change the entire process to asynchronous processing in order to move and map toio at the same time
 
 LOOP = True
+TOIO_NAME = "toio-H6r"
 ATOM_MAC = "64:b7:08:80:e1:3c" #bluetooth接続に使用　環境にあわせて変更  change to suit your environment
 ATOM_IP = "192.168.0.104" #WiFi接続に使用　環境にあわせて変更  change to suit your environment
 PORT ='COM3' #Serial接続に使用　環境にあわせて変更  change to suit your environment
-MAX_X = 78
-MIN_X = -205
-MAX_Y = 205
-MIN_Y = -13
+MAX_X = 326
+MIN_X = 43
+MAX_Y = 240
+MIN_Y = 46
 MAPCONFIG = MapSetting(MAX_X, MIN_X, MAX_Y, MIN_Y)
 
 def ctrl_c_handler(_signum, _frame):
@@ -31,31 +32,30 @@ def ctrl_c_handler(_signum, _frame):
 signal.signal(signal.SIGINT, ctrl_c_handler)
 
 
-def main():
-    cube = SimpleCube()
+async def main():
+    cube = await connect_toio(TOIO_NAME)
     atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
     slam = SLAM(atom, cube, MAPCONFIG)
     fig,ax = plt.subplots()
     #fig2,ax2 = plt.subplots()
     im = ax.imshow(slam.get_map(), cmap='jet', vmin=0, vmax=2)
     #im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
-    def update():
-        while LOOP:
-            slam.update()
-            im.set_data(slam.get_map())
-            #im2.set_data(slam.get_colored_map())
-            plt.pause(0.01)
-            time.sleep(0.01)
-    def move():
-        while LOOP:
-            slam.move()
-            time.sleep(1)
-    thread = threading.Thread(target=move)
-    thread.start()
-    update()
-    plt.close()
-    atom.disconnect()
-    return 0
+    print(cube.name)
+    while LOOP:
+        pos, angle = await slam.mesurement.get_cube_location()
+        print(await slam.mesurement.get_distance())
+        print(pos, angle)
+        await slam.update()
+        im.set_data(slam.get_map())
+        # #im2.set_data(slam.get_colored_map())
+        plt.pause(0.01)
+        # time.sleep(0.01)
+        await asyncio.sleep(0.01)
+    # plt.close()
+    # atom.disconnect()
+    # return 0
+
+
 
 def main_sim(config):
     cube = CubeSiM()
@@ -89,5 +89,7 @@ def main_sim(config):
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    asyncio.run(main())
+    
+    
 
