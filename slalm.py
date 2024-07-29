@@ -5,7 +5,7 @@ from toio.simple import SimpleCube
 import matplotlib.pyplot as plt
 
 @dataclass
-class MappingConfig():
+class MapSetting():
     max_x: float
     min_x: float
     max_y: float
@@ -25,7 +25,7 @@ class Mapping():
     1: searched
     2: obstacle
     '''
-    def __init__(self, config: MappingConfig):
+    def __init__(self, config: MapSetting):
         self.config = config
         self.map = self.create_map()
 
@@ -54,7 +54,7 @@ class Mapping():
         '''
         ブレゼンハムアルゴリズム
         2点間の直線を引く
-        探索済みのマスを返す
+        障害物とtoioの間のマスを探索済みのマスとして返す
         '''
         points = []
         dx = abs(x1 - x0)
@@ -76,7 +76,8 @@ class Mapping():
                 y0 += sy
 
         return np.array(points)
-
+    
+    #TODO バグがあるので修正する
     def color_map_based_on_counts(self,cell_size=10):
         """
         マップをマス目に分けて、各マスの中の0,1,2の個数に応じてマスの色を決定する。
@@ -151,7 +152,7 @@ class Mesurement():
         return pos, orientation
 
 class SLAM():
-    def __init__(self, atom: AtomConnection, cube: SimpleCube, config: MappingConfig):
+    def __init__(self, atom: AtomConnection, cube: SimpleCube, config: MapSetting):
         self.atom = atom
         self.cube = cube
         self.mapping = Mapping(config)
