@@ -7,6 +7,8 @@ import time
 import signal
 import matplotlib.pyplot as plt
 import threading
+import nest_asyncio
+nest_asyncio.apply()
 
 #非同期処理
 
@@ -34,17 +36,23 @@ def main():
     atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
     slam = SLAM(atom, cube, MAPCONFIG)
     fig,ax = plt.subplots()
-    fig2,ax2 = plt.subplots()
+    #fig2,ax2 = plt.subplots()
     im = ax.imshow(slam.get_map(), cmap='jet', vmin=0, vmax=2)
-    im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
+    #im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
     def update():
         while LOOP:
             slam.update()
             im.set_data(slam.get_map())
-            im2.set_data(slam.get_colored_map())
+            #im2.set_data(slam.get_colored_map())
+            plt.pause(0.01)
             time.sleep(0.01)
-    thread = threading.Thread(target=update)
+    def move():
+        while LOOP:
+            slam.move()
+            time.sleep(1)
+    thread = threading.Thread(target=move)
     thread.start()
+    update()
     plt.close()
     atom.disconnect()
     return 0
@@ -81,5 +89,5 @@ def main_sim(config):
 
 
 if __name__ == "__main__":
-    sys.exit(main_sim(MAPCONFIG))
+    sys.exit(main())
 

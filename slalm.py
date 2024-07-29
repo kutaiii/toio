@@ -176,6 +176,7 @@ class Moving():
         '''
         その場で一周
         '''
+        print("rotate")
         self.cube.turn(1,360)
     def turn(self, angle):
         '''
@@ -194,7 +195,7 @@ class Moving():
         '''
         指定距離移動
         '''
-        self.cube.move(travel_distanvce)
+        self.cube.move(travel_distanvce,1)
         
 
 class SLAM():
@@ -224,11 +225,12 @@ class SLAM():
     def move(self):
         print("moving")
         self.moving.rotate()
-        if self.mesurement.get_distance() > 10:
-            self.moving.move(10)
-        else:
-            self.moving.turn(90)
-        
+        if self.mesurement.get_distance() is not None:
+            if self.mesurement.get_distance() > 10:
+                self.moving.move(10)
+            else:
+                self.moving.turn(90)
+            
 
         
     
