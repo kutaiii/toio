@@ -93,7 +93,7 @@ class AtomWiFiConnection(AtomConnection):
     def __init__(self, ip):
         self.ip = ip
         self.port =5000
-        self.buffer_size = 1024
+        self.buffer_size = 4096
         self.recv_buffer = ""
         self.connect()
         print("atom connect to wifi")
@@ -107,6 +107,7 @@ class AtomWiFiConnection(AtomConnection):
 
     def distance(self):
         distance = self.client.recv(self.buffer_size).decode('utf-8').strip()
+        distance = distance.split("\n")[-1]
         try:
             distance = float(distance)
             distance = distance-TOIO_SIZE/2

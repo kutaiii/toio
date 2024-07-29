@@ -34,7 +34,7 @@ signal.signal(signal.SIGINT, ctrl_c_handler)
 async def connect():
     try:
         cube = await connect_toio(TOIO_NAME)
-        atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
+        atom = AtomWiFiConnection(ATOM_IP) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
         slam = SLAM(atom, cube, MAPCONFIG)
         return slam
     except:
@@ -51,7 +51,7 @@ async def slam_main(slam: SLAM):
     print(slam.cube.name)
     while LOOP:
         pos, angle = await slam.mesurement.get_cube_location()
-        print(await slam.mesurement.get_distance())
+        print(slam.mesurement.get_distance())
         print(pos, angle)
         await slam.update()
         im.set_data(slam.get_map())
