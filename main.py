@@ -67,7 +67,7 @@ def main_sim(config):
             time.sleep(0.01)
     def move():
         while LOOP:
-            print("moving!")
+            slam.move()
             time.sleep(1)
     thread = threading.Thread(target=move)
     thread.start()

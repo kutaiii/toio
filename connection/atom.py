@@ -32,7 +32,7 @@ class AtomSimulatorConnection(AtomConnection):
     シミュレータ接続クラス
     '''
     def __init__(self):
-        print("AtomSimulatorConnection")
+        print("atom connect to simulator")
 
     def connect(self):
         pass
@@ -50,6 +50,7 @@ class AtomSerialConnection(AtomConnection):
     def __init__(self, port):
         self.port = port
         self.connect()
+        print("atom connect to serial")
         
     def connect(self):
         self.ser = serial.Serial(self.port, 115200)
@@ -94,6 +95,7 @@ class AtomWiFiConnection(AtomConnection):
         self.port =5000
         self.buffer_size = 1024
         self.connect()
+        print("atom connect to wifi")
         
     def connect(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -151,12 +151,48 @@ class Mesurement():
         orientation = self.cube.get_orientation()
         return pos, orientation
 
+class Moving():
+    def __init__(self, cube: SimpleCube, config: MapSetting):
+        self.cube = cube
+        self.config = config
+
+    def correct_position(self,x ,y):
+        '''
+        位置補正
+        '''
+        x = x + self.config.min_x
+        y = y + self.config.min_y
+        if x < self.config.min_x:
+            x = self.config.min_x
+        if x > self.config.max_x:
+            x = self.config.max_x
+        if y < self.config.min_y:
+            y = self.config.min_y
+        if y > self.config.max_y:
+            y = self.config.max_y
+        return x, y
+        
+    def rotate(self):
+        '''
+        その場で一周
+        '''
+        self.cube.turn(1,360)
+
+    def move_to(self, x, y):
+        '''
+        指定位置まで移動
+        '''
+        x, y = self.correct_position(x, y)
+        self.cube.move_to(x, y)
+        
+
 class SLAM():
     def __init__(self, atom: AtomConnection, cube: SimpleCube, config: MapSetting):
         self.atom = atom
         self.cube = cube
         self.mapping = Mapping(config)
         self.mesurement = Mesurement(atom, cube)
+        self.moving = Moving(cube)
     
     def update(self):
         '''
@@ -175,11 +211,12 @@ class SLAM():
         return self.mapping.color_map_based_on_counts()
     
     def move(self):
-        pass
+        print("moving")
+        self.moving.rotate()
+        
     
-    def main(self):
-        self.move()
-        self.update()
+    
+
     
     
         
