@@ -27,6 +27,22 @@ class AtomConnection:
         '''
         pass
 
+class AtomSimulatorConnection(AtomConnection):
+    '''
+    シミュレータ接続クラス
+    '''
+    def __init__(self):
+        print("AtomSimulatorConnection")
+
+    def connect(self):
+        pass
+
+    def disconnect(self):
+        pass
+
+    def distance(self):
+        return 0
+
 class AtomSerialConnection(AtomConnection):
     '''
     シリアル接続クラス
