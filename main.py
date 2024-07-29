@@ -32,7 +32,7 @@ signal.signal(signal.SIGINT, ctrl_c_handler)
 def main():
     cube = SimpleCube()
     atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
-    slam = SLAM(atom, cube, config)
+    slam = SLAM(atom, cube, MAPCONFIG)
     fig,ax = plt.subplots()
     fig2,ax2 = plt.subplots()
     im = ax.imshow(slam.get_map(), cmap='jet', vmin=0, vmax=2)
@@ -80,5 +80,5 @@ def main_sim(config):
 
 
 if __name__ == "__main__":
-    sys.exit(main_sim(config))
+    sys.exit(main_sim(MAPCONFIG))
 
