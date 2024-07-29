@@ -143,7 +143,7 @@ class Measuring():
         '''
         Atomとの距離を取得する
         '''
-        return await self.atom.distance()
+        return self.atom.distance()
     
     async def get_cube_location(self):
         '''
@@ -244,7 +244,11 @@ class SLAM():
     async def move(self):
         print("moving")
         await self.moving.rotate()
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
+        if self.mesurement.get_distance() is not None:
+            if await self.mesurement.get_distance() > 50:
+                await self.moving.move(10)
+
         # if await self.mesurement.get_distance() is not None:
         #     if await self.mesurement.get_distance() > 10:
         #         self.moving.move(10)

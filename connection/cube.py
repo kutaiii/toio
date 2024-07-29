@@ -19,7 +19,7 @@ class CubeSiM():
     def move(self, speed, distance):
         pass
 
-async def connect_toio(name):
+async def connect_toio(name:str):
     try:
         cube = ToioCoreCube(name=name)
         await cube.scan()

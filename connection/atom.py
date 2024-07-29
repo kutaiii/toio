@@ -110,6 +110,7 @@ class AtomWiFiConnection(AtomConnection):
         try:
             distance = float(distance)
             distance = distance-TOIO_SIZE/2
+            print(distance)
             return distance*SCALE
         except:
             return None
