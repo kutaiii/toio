@@ -32,6 +32,11 @@ class Mapping():
         self.config = config
         self.map = self.create_map()
 
+    def is_point_in_map(self, x, y):
+        if self.map.shape[0] > x >= 0 and self.map.shape[1] > y >= 0:
+            return True
+        return False
+
     def map_size(self):
         return (self.config.max_x - self.config.min_x, self.config.max_y - self.config.min_y)
     
@@ -123,7 +128,16 @@ class Mapping():
         obstacle_y = y + distance * np.sin(angle)
         obstacle_x = int(obstacle_x)
         obstacle_y = int(obstacle_y)
-        free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
+        if self.is_point_in_map(obstacle_x, obstacle_y):
+            free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
+        else:
+            if obstacle_x >= self.map.shape[0]:
+                obstacle_x = self.map.shape[0] - 1
+                obstacle_y = int(y + (obstacle_x - x) * np.tan(angle))
+            if obstacle_y >= self.map.shape[1]:
+                obstacle_y = self.map.shape[1] - 1
+                obstacle_x = int(x + (obstacle_y - y) / np.tan(angle))
+            free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
         if self.map.shape[0] > obstacle_x >= 0 and self.map.shape[1] > obstacle_y >= 0 and self.map.shape[0] > x >= 0 and self.map.shape[1] > y >= 0:
             self.map[free_points[:, 0], free_points[:, 1]] = 1
             self.map[obstacle_x, obstacle_y] = 2           
