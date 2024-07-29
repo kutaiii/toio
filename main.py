@@ -54,15 +54,16 @@ def main_sim(config):
     atom = AtomSimulatorConnection()
     slam = SLAM(atom, cube, config)
     fig,ax = plt.subplots()
-    fig2,ax2 = plt.subplots()
+    # fig2,ax2 = plt.subplots()
     im = ax.imshow(slam.get_map(), cmap='jet', vmin=0, vmax=2)
-    im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
+    # im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
     print("start")
     def update():
         while LOOP:
             slam.update()
             im.set_data(slam.get_map())
-            im2.set_data(slam.get_colored_map())
+            # im2.set_data(slam.get_colored_map())
+            print("update")
             plt.pause(0.01)
             time.sleep(0.01)
     def move():

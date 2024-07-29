@@ -132,7 +132,7 @@ class Mapping():
     def get_map_value(self, x, y):
         return self.map[x, y]
 
-class Mesurement():
+class Measuring():
     def __init__(self, atom: AtomConnection, cube: SimpleCube):
         self.atom = atom
         self.cube = cube
@@ -177,13 +177,24 @@ class Moving():
         その場で一周
         '''
         self.cube.turn(1,360)
+    def turn(self, angle):
+        '''
+        指定角度回転
+        '''
+        self.cube.turn(1,angle)
 
     def move_to(self, x, y):
         '''
         指定位置まで移動
         '''
         x, y = self.correct_position(x, y)
-        self.cube.move_to(x, y)
+        self.cube.move_to(10,x, y)
+
+    def move(self,travel_distanvce):
+        '''
+        指定距離移動
+        '''
+        self.cube.move(travel_distanvce)
         
 
 class SLAM():
@@ -191,8 +202,8 @@ class SLAM():
         self.atom = atom
         self.cube = cube
         self.mapping = Mapping(config)
-        self.mesurement = Mesurement(atom, cube)
-        self.moving = Moving(cube)
+        self.mesurement = Measuring(atom, cube)
+        self.moving = Moving(cube, config)
     
     def update(self):
         '''
@@ -213,6 +224,12 @@ class SLAM():
     def move(self):
         print("moving")
         self.moving.rotate()
+        if self.mesurement.get_distance() > 10:
+            self.moving.move(10)
+        else:
+            self.moving.turn(90)
+        
+
         
     
     

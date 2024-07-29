@@ -86,6 +86,7 @@ class AtomBleConnection(AtomConnection):
     def distance(self):
         pass
 
+#TODO 接続が安定しないことの対策
 class AtomWiFiConnection(AtomConnection):
     '''
     WiFi接続クラス
@@ -94,6 +95,7 @@ class AtomWiFiConnection(AtomConnection):
         self.ip = ip
         self.port =5000
         self.buffer_size = 1024
+        self.recv_buffer = ""
         self.connect()
         print("atom connect to wifi")
         

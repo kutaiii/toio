@@ -7,3 +7,13 @@ class CubeSiM():
     
     def get_orientation(self):
         return 0
+    
+    def turn(self, direction, angle):
+        pass
+
+    def move_to(self, speed, x, y):
+        pass
+
+    def move(self, speed, distance):
+        pass
+
