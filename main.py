@@ -31,16 +31,24 @@ def ctrl_c_handler(_signum, _frame):
     LOOP = False
 signal.signal(signal.SIGINT, ctrl_c_handler)
 
+async def connect():
+    try:
+        cube = await connect_toio(TOIO_NAME)
+        atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
+        slam = SLAM(atom, cube, MAPCONFIG)
+        return slam
+    except:
+        print("No cubes found")
+        sys.exit(1)
 
-async def main():
-    cube = await connect_toio(TOIO_NAME)
-    atom = AtomSerialConnection(PORT) #WiFi接続の場合はAtomWiFiConnection(ATOM_IP)に変更
-    slam = SLAM(atom, cube, MAPCONFIG)
+
+async def slam_main(slam: SLAM):
+    slam = slam
     fig,ax = plt.subplots()
     #fig2,ax2 = plt.subplots()
     im = ax.imshow(slam.get_map(), cmap='jet', vmin=0, vmax=2)
     #im2 = ax2.imshow(slam.get_colored_map(), cmap='jet', vmin=0, vmax=2)
-    print(cube.name)
+    print(slam.cube.name)
     while LOOP:
         pos, angle = await slam.mesurement.get_cube_location()
         print(await slam.mesurement.get_distance())
@@ -54,6 +62,19 @@ async def main():
     # plt.close()
     # atom.disconnect()
     # return 0
+
+async def move_main(slam: SLAM):
+    slam = slam
+    while LOOP:
+        await slam.move()
+        await asyncio.sleep(1)
+    return 0
+
+
+async def main():
+    slam = await connect()
+    await asyncio.gather(slam_main(slam),move_main(slam))
+    
 
 
 
@@ -83,9 +104,6 @@ def main_sim(config):
     update()
     plt.close()
     return 0
-
-
-
 
 
 if __name__ == "__main__":

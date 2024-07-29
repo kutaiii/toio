@@ -3,7 +3,7 @@ from bleak import BleakClient
 from abc import ABC, abstractmethod
 import socket
 
-SCALE = 54/45 #atomによる距離とtoioマップの距離の比率
+SCALE = 110/122 #atomによる距離とtoioマップの距離の比率
 TOIO_SIZE = 31.8 #toioの一辺の長さ
 
 class AtomConnection:
@@ -62,7 +62,7 @@ class AtomSerialConnection(AtomConnection):
         try:
             distance = float(distance)
             distance = distance - TOIO_SIZE/2
-            return distance/SCALE
+            return distance*SCALE
         except:
             return None
 
@@ -110,7 +110,7 @@ class AtomWiFiConnection(AtomConnection):
         try:
             distance = float(distance)
             distance = distance-TOIO_SIZE/2
-            return distance/SCALE
+            return distance*SCALE
         except:
             return None
 
