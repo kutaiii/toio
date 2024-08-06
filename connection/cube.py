@@ -1,3 +1,5 @@
+from toio.cube import ToioCoreCube
+
 class CubeSiM():
     def __init__(self):
         print("CubeSiM")
@@ -16,4 +18,16 @@ class CubeSiM():
 
     def move(self, speed, distance):
         pass
+
+async def connect_toio(name:str):
+    try:
+        cube = ToioCoreCube(name=name)
+        await cube.scan()
+        await cube.connect()
+        print("Connected")
+        return cube
+    except:
+        print("No cubes found")
+
+
 

@@ -1,10 +1,9 @@
-import asyncio
 import serial
 from bleak import BleakClient
 from abc import ABC, abstractmethod
 import socket
 
-SCALE = 54/45 #atomによる距離とtoioマップの距離の比率
+SCALE = 110/122 #atomによる距離とtoioマップの距離の比率
 TOIO_SIZE = 31.8 #toioの一辺の長さ
 
 class AtomConnection:
@@ -20,7 +19,7 @@ class AtomConnection:
         pass
 
     @abstractmethod
-    def distance(self):
+    async def distance(self):
         '''
         Atomとの距離を取得する
         get distance from Atom
@@ -40,7 +39,7 @@ class AtomSimulatorConnection(AtomConnection):
     def disconnect(self):
         pass
 
-    def distance(self):
+    async def distance(self):
         return 0
 
 class AtomSerialConnection(AtomConnection):
@@ -58,12 +57,12 @@ class AtomSerialConnection(AtomConnection):
     def disconnect(self):
         self.ser.close()
 
-    def distance(self):
+    async def distance(self):
         distance = self.ser.readline().decode('utf-8').strip()
         try:
             distance = float(distance)
             distance = distance - TOIO_SIZE/2
-            return distance/SCALE
+            return distance*SCALE
         except:
             return None
 
@@ -94,7 +93,7 @@ class AtomWiFiConnection(AtomConnection):
     def __init__(self, ip):
         self.ip = ip
         self.port =5000
-        self.buffer_size = 1024
+        self.buffer_size = 4096
         self.recv_buffer = ""
         self.connect()
         print("atom connect to wifi")
@@ -108,10 +107,12 @@ class AtomWiFiConnection(AtomConnection):
 
     def distance(self):
         distance = self.client.recv(self.buffer_size).decode('utf-8').strip()
+        distance = distance.split("\n")[-1]
         try:
             distance = float(distance)
             distance = distance-TOIO_SIZE/2
-            return distance/SCALE
+            print(distance)
+            return distance*SCALE
         except:
             return None
 

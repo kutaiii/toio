@@ -2,7 +2,10 @@ import numpy as np
 from dataclasses import dataclass
 from connection.atom import AtomConnection
 from toio.simple import SimpleCube
+from toio.cube import ToioCoreCube
 import matplotlib.pyplot as plt
+import asyncio
+from toio import *
 
 @dataclass
 class MapSetting():
@@ -29,6 +32,11 @@ class Mapping():
         self.config = config
         self.map = self.create_map()
 
+    def is_point_in_map(self, x, y):
+        if self.map.shape[0] > x >= 0 and self.map.shape[1] > y >= 0:
+            return True
+        return False
+
     def map_size(self):
         return (self.config.max_x - self.config.min_x, self.config.max_y - self.config.min_y)
     
@@ -36,7 +44,7 @@ class Mapping():
         size = self.map_size()
         return np.zeros(size)
     
-    def locatin_correction(self, x, y, orientation):
+    def locatin_correction(self, x, y, angle):
         '''
         位置情報をマップの座標に変換する
         '''
@@ -44,11 +52,10 @@ class Mapping():
         y = int(y)
         x = x - self.config.min_x
         y = y - self.config.min_y
-        orientation = -orientation
-        orientation = orientation-90
-        orientation = np.deg2rad(orientation)
+        angle = angle
+        angle = np.deg2rad(angle)
 
-        return x, y, orientation
+        return x, y, angle
     
     def bresenham(self, x0, y0, x1, y1):
         '''
@@ -121,7 +128,16 @@ class Mapping():
         obstacle_y = y + distance * np.sin(angle)
         obstacle_x = int(obstacle_x)
         obstacle_y = int(obstacle_y)
-        free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
+        if self.is_point_in_map(obstacle_x, obstacle_y):
+            free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
+        else:
+            if obstacle_x >= self.map.shape[0]:
+                obstacle_x = self.map.shape[0] - 1
+                obstacle_y = int(y + (obstacle_x - x) * np.tan(angle))
+            if obstacle_y >= self.map.shape[1]:
+                obstacle_y = self.map.shape[1] - 1
+                obstacle_x = int(x + (obstacle_y - y) / np.tan(angle))
+            free_points = self.bresenham(x, y, obstacle_x, obstacle_y)
         if self.map.shape[0] > obstacle_x >= 0 and self.map.shape[1] > obstacle_y >= 0 and self.map.shape[0] > x >= 0 and self.map.shape[1] > y >= 0:
             self.map[free_points[:, 0], free_points[:, 1]] = 1
             self.map[obstacle_x, obstacle_y] = 2           
@@ -133,7 +149,7 @@ class Mapping():
         return self.map[x, y]
 
 class Measuring():
-    def __init__(self, atom: AtomConnection, cube: SimpleCube):
+    def __init__(self, atom: AtomConnection, cube: ToioCoreCube):
         self.atom = atom
         self.cube = cube
 
@@ -143,16 +159,19 @@ class Measuring():
         '''
         return self.atom.distance()
     
-    def get_cube_location(self):
+    async def get_cube_location(self):
         '''
         Cubeの位置情報を取得する
         '''
-        pos = self.cube.get_current_position()
-        orientation = self.cube.get_orientation()
-        return pos, orientation
+        data = await self.cube.api.id_information.read()
+        if  hasattr(data, 'center') and hasattr(data.center, 'point') and hasattr(data.center, 'angle'):
+            pos = (data.center.point.x, data.center.point.y)
+            angle = data.center.angle
+            return pos, angle
+        return None, None
 
 class Moving():
-    def __init__(self, cube: SimpleCube, config: MapSetting):
+    def __init__(self, cube: ToioCoreCube, config: MapSetting):
         self.cube = cube
         self.config = config
 
@@ -172,46 +191,60 @@ class Moving():
             y = self.config.max_y
         return x, y
         
-    def rotate(self):
+    async def rotate(self):
         '''
         その場で一周
         '''
         print("rotate")
-        self.cube.turn(1,360)
+        await self.cube.api.motor.motor_control(20,-20)
+        await asyncio.sleep(2)
+        await self.cube.api.motor.motor_control(0,0)
+
     def turn(self, angle):
         '''
         指定角度回転
         '''
         self.cube.turn(1,angle)
 
-    def move_to(self, x, y):
+    async def move_to(self, x, y):
         '''
         指定位置まで移動
         '''
         x, y = self.correct_position(x, y)
-        self.cube.move_to(10,x, y)
+        await self.cube.api.motor.motor_control_target(
+            timeout=10,
+            movement_type= MovementType.Linear,
+            speed = Speed(
+                max=20,speed_change_type=SpeedChangeType.AccelerationAndDeceleration
+            ),
+            target=TargetPosition(
+                cube_location=CubeLocation(point=Point(x, y), angle=0),
+                rotation_option=RotationOption.AbsoluteOptimal,
+            )           
+        )
 
-    def move(self,travel_distanvce):
+    async def move(self,travel_distanvce):
         '''
-        指定距離移動
+        ちょっと移動
         '''
-        self.cube.move(travel_distanvce,1)
-        
+        await self.cube.api.motor.motor_control(20,20)
+        await asyncio.sleep(1)
+        await self.cube.api.motor.motor_control(0,0)
 
 class SLAM():
-    def __init__(self, atom: AtomConnection, cube: SimpleCube, config: MapSetting):
+    def __init__(self, atom: AtomConnection, cube: ToioCoreCube, config: MapSetting):
         self.atom = atom
         self.cube = cube
         self.mapping = Mapping(config)
         self.mesurement = Measuring(atom, cube)
         self.moving = Moving(cube, config)
     
-    def update(self):
+    async def update(self):
         '''
         マップを更新する
         '''
         distance = self.mesurement.get_distance()
-        pos, orientation = self.mesurement.get_cube_location()
+        pos, orientation = await self.mesurement.get_cube_location()
         if (distance is not None) and (pos is not None) and (orientation is not None):
             self.mapping.update_map(pos[0], pos[1], orientation, distance)
         return self.mapping.get_map()
@@ -222,14 +255,20 @@ class SLAM():
     def get_colored_map(self):
         return self.mapping.color_map_based_on_counts()
     
-    def move(self):
+    async def move(self):
         print("moving")
-        self.moving.rotate()
-        if self.mesurement.get_distance() is not None:
-            if self.mesurement.get_distance() > 10:
-                self.moving.move(10)
-            else:
-                self.moving.turn(90)
+        await self.moving.rotate()
+        await asyncio.sleep(0.1)
+        distance = self.mesurement.get_distance()
+        if distance is not None:
+            if distance > 40:
+                await self.moving.move(10)
+
+        # if await self.mesurement.get_distance() is not None:
+        #     if await self.mesurement.get_distance() > 10:
+        #         self.moving.move(10)
+        #     else:
+        #         self.moving.turn(90)
             
 
         
